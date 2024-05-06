@@ -1,24 +1,78 @@
-pipeline{
+// pipeline{
+//     agent any 
+//     stages{
+//         stage("Checkout"){
+//             steps{
+//                 checkout scm
+//             }
+//         }
+//     }
+//     stage("Test"){
+//         steps{
+//             sh "sudo apt install npm"
+//             sh "npm test"
+
+
+//         }
+//     }
+//     stage("Build"){
+//         steps{
+//             sh "npm run build"
+            
+//         }
+//     }
+// }
+
+pipeline {
     agent any 
-    stages{
-        stage("Checkout"){
-            steps{
+    
+    environment {
+        NODEJS_VERSION = '14'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
                 checkout scm
             }
         }
-    }
-    stage("Test"){
-        steps{
-            sh "sudo apt install npm"
-            sh "npm test"
-
-
+        
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    def nvmHome = tool 'NVM'
+                    env.PATH = "${nvmHome}/:${env.PATH}"
+                }
+                
+                script {
+                    sh "nvm install ${NODEJS_VERSION}"
+                    sh "nvm use ${NODEJS_VERSION}"
+                }
+                
+                sh "npm install"
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh "npm test"
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh "npm run build"
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                // Add deployment steps here as needed
+            }
         }
     }
-    stage("Build"){
-        steps{
-            sh "npm run build"
-            
-        }
+    
+    post {
+        // Define post-build actions here
     }
 }
